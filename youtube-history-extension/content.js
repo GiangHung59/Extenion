@@ -1,52 +1,41 @@
-function getVideoId() {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get("v");
-}
+(async () => {
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const getVideoId = () => {
+    const url = new URL(location.href);
+    return url.pathname === "/watch" ? url.searchParams.get("v") : null;
+  };
 
-function formatDate(isoDate) {
-  const d = new Date(isoDate);
-  return d.toLocaleDateString("vi-VN");
-}
+  async function updateDisplay() {
+    const id = getVideoId();
+    if (!id) return;
 
-function injectViewInfo(info) {
-  const titleEl = document.querySelector("#title") || document.querySelector("h1.title");
-  if (!titleEl || titleEl.querySelector(".yt-view-history-note")) return;
+    const { ytViews } = await chrome.storage.local.get("ytViews");
+    const views = ytViews || {};
+    const data = views[id];
 
-  const div = document.createElement("div");
-  div.className = "yt-view-history-note";
-  div.style.fontSize = "14px";
-  div.style.marginTop = "6px";
-  div.style.textAlign = "right";
-  div.style.color = "#065fd4";
+    let el = document.querySelector("#personal-view-count");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "personal-view-count";
+      el.style.cssText = "margin-left:auto;padding:6px;font-size:14px;";
+      const titleRow = document.querySelector("#title h1")?.parentElement;
+      if (titleRow) titleRow.appendChild(el);
+    }
 
-  if (info.count > 0) {
-    div.textContent = `👁️ ${info.count} lượt xem từ bạn, lần đầu: ${formatDate(info.firstDate)}`;
-  } else {
-    div.textContent = "👁️ Chưa xem video này trước đây";
+    if (data) {
+      const firstDate = new Date(data.first).toLocaleDateString();
+      el.textContent = `👁️ ${data.count} lượt xem từ bạn, lần đầu: ${firstDate}`;
+    } else {
+      el.textContent = "👁️ Chưa xem video này trước đây";
+    }
   }
 
-  titleEl.appendChild(div);
-}
-
-function checkAndDisplayViewCount() {
-  const videoId = getVideoId();
-  if (!videoId) return;
-
-  chrome.storage.local.get(["viewHistory"], (result) => {
-    const history = result.viewHistory || {};
-    const views = history[videoId] || [];
-    injectViewInfo({
-      count: views.length,
-      firstDate: views[0] || null
-    });
-  });
-}
-
-let lastVideoId = null;
-setInterval(() => {
-  const currentVideoId = getVideoId();
-  if (currentVideoId && currentVideoId !== lastVideoId) {
-    lastVideoId = currentVideoId;
-    setTimeout(checkAndDisplayViewCount, 2000);
-  }
-}, 3000);
+  let lastId = null;
+  setInterval(() => {
+    const id = getVideoId();
+    if (id && id !== lastId) {
+      lastId = id;
+      updateDisplay();
+    }
+  }, 1000);
+})();
