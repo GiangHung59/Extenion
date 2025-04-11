@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube View Tracker",
+  "version": "1.0",
+  "description": "Hiển thị số lần bạn đã xem video YouTube",
+  "permissions": ["storage", "scripting"],
+  "host_permissions": ["https://www.youtube.com/*"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  },
+  "background": {
+    "service_worker": "popup.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/watch*"],
+      "js": ["content.js"]
+    }
+  ]
+}
