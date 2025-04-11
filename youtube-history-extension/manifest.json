@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube View Tracker",
+  "version": "1.0",
+  "description": "Hiển thị số lượt xem cá nhân trên YouTube và thống kê video đã xem.",
+  "permissions": ["storage", "scripting", "activeTab", "downloads"],
+  "host_permissions": ["https://www.youtube.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [{
+    "matches": ["https://www.youtube.com/*"],
+    "js": ["content.js"],
+    "run_at": "document_idle"
+  }],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
