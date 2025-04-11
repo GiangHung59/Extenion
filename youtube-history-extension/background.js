@@ -1,1 +1,0 @@
-// Để trống vì chưa dùng service worker.
