@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube History Checker",
+  "version": "1.0",
+  "description": "Hiển thị số lần xem cá nhân và ngày xem đầu tiên cho video YouTube.",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [{
+    "matches": ["*://www.youtube.com/watch*"],
+    "js": ["content.js"],
+    "run_at": "document_end"
+  }]
+}
