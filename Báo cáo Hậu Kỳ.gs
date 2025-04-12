@@ -2,13 +2,13 @@
 // Mô tả: Kiểm tra thư mục Google Drive, ánh xạ số tập từ Sheet, gửi thông báo video đến nhóm Telegram, lỗi đến cá nhân, log ngày lọc từ DATE_FILTER, thêm hàm xóa ScriptProperties
 
 // Biến toàn cục
-const TELEGRAM_BOT_TOKEN = '7851579734:AAG0ftBZRG5MbQTDw8vGzxtJoB4CxjyLIrU';
-const TELEGRAM_CHAT_ID = '5675429766'; // ID cá nhân để gửi lỗi
+const TELEGRAM_BOT_TOKEN = 'XXXXXXXX'; //BOT
+const TELEGRAM_CHAT_ID = 'XXXXXX'; // ID cá nhân để gửi lỗi
 const TELEGRAM_GROUP_CHAT_ID = '-123456789'; // TODO: Thay bằng ID nhóm Telegram thực tế
-const SPREADSHEET_ID = '1NJmpMwhSgFG3C2PlWgtZaCPUVFTAXrirj-CBM6N1xS4';
+const SPREADSHEET_ID = 'YYYYYYYYYYYYY'; /Dùng để ánh xạ, đối chiếu
 const SCRIPT_PROPERTIES = PropertiesService.getScriptProperties();
 const MAX_FILES_PER_RUN = 300;
-const DATE_FILTER = new Date('2025-02-01T00:00:00+07:00');
+const DATE_FILTER = new Date('2025-02-01T00:00:00+07:00'); /Từ thời gian này tới hiện tại
 
 // Hàm kiểm tra thư mục chính
 function checkMainFolder() {
