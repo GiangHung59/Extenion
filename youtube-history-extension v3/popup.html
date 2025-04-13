@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      width: 100%;
+      max-width: 1300px; /* Mở rộng giao diện để xem tốt hơn */
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+      text-align: center;
+      box-sizing: border-box;
+      margin: 0 auto;
+    }
+    body.dark {
+      background-color: #121212;
+      color: #fff;
+    }
+    button, input[type="number"] {
+      padding: 12px;
+      margin-top: 10px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-size: 14px;
+      background-color: #007bff;
+      color: white;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    button:focus {
+      outline: none;
+    }
+    h2 {
+      margin-bottom: 15px;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    /* Cập nhật lưới video để hiển thị tốt hơn */
+    .video-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Mở rộng cột để các video hiển thị lớn hơn */
+      gap: 30px; /* Tăng khoảng cách giữa các video */
+      margin-top: 20px;
+      justify-items: center;
+      max-width: 100%; /* Mở rộng khu vực chứa video */
+    }
+    .video-item {
+      width: 100%;  /* Mở rộng video-item */
+      max-width: 300px; /* Giới hạn kích thước của mỗi video-item */
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .video-item img {
+      width: 250px; /* Thu nhỏ thumbnail để vừa với không gian */
+      height: auto;
+      border-radius: 8px;
+    }
+    .video-item a {
+      text-decoration: none;
+      color: #333;
+    }
+    .video-item p {
+      font-size: 14px;
+      margin-top: 5px;
+      color: #555;
+    }
+
+    /* Điều chỉnh kích thước ô nhập số */
+    #topN {
+      width: 70px;
+      margin-top: 8px;
+    }
+
+    /* Đảm bảo khi ở chế độ tối, giao diện vẫn dễ nhìn */
+    body.dark button {
+      background-color: #333;
+      color: #fff;
+    }
+    body.dark button:hover {
+      background-color: #444;
+    }
+    body.dark .video-item a {
+      color: #fff;
+    }
+    body.dark .video-item p {
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h2>📺 YouTube View Tracker</h2>
+  <input type="file" id="jsonUpload">
+  <button id="exportBtn">💾 Xuất dữ liệu JSON</button>
+  <button id="statsBtn">📊 Thống kê chi tiết</button>
+  <input type="number" id="topN" placeholder="10" value="10">
+  <button id="viewTopBtn">🔥 Xem video xem nhiều nhất</button>
+  <button id="clearDataBtn">🧹 Xóa Dữ Liệu</button>
+
+  <script src="popup.js"></script>
+</body>
+</html>
