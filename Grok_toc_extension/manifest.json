@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Grok TOC Panel",
+  "version": "2.0.5",
+  "description": "Tự động tạo và cập nhật mục lục cho các hội thoại Grok, phím tắt Alt + S để toggle nút TOC",
+  "icons": {
+    "48": "iconTOC.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.grok.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": [],
+  "host_permissions": ["*://*.grok.com/*"]
+}
