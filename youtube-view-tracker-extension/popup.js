@@ -1,3 +1,21 @@
+// Đổi giao diện sáng/tối theo chế độ của trình duyệt
+const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+function applyTheme(isDark) {
+  if (isDark) {
+    document.body.classList.add('dark');
+  } else {
+    document.body.classList.remove('dark');
+  }
+}
+
+// Lắng nghe sự thay đổi chế độ sáng/tối
+mediaQuery.addEventListener('change', (e) => {
+  applyTheme(e.matches);
+});
+
+// Áp dụng theme ban đầu
+applyTheme(mediaQuery.matches);
+
 document.getElementById('jsonUpload').addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -43,6 +61,15 @@ document.getElementById('jsonUpload').addEventListener('change', async (e) => {
   }
 });
 
+// Xóa dữ liệu trong chrome.storage.local
+document.getElementById('clearDataBtn').addEventListener('click', async () => {
+  const confirmDelete = confirm('Bạn có chắc muốn xóa tất cả dữ liệu?');
+  if (confirmDelete) {
+    await chrome.storage.local.clear();
+    alert('✅ Dữ liệu đã được xóa!');
+  }
+});
+
 document.getElementById('exportBtn').addEventListener('click', async () => {
   const result = await chrome.storage.local.get('ytViews');
   const blob = new Blob([JSON.stringify(result.ytViews, null, 2)], { type: 'application/json' });
@@ -60,18 +87,33 @@ document.getElementById('viewTopBtn').addEventListener('click', async () => {
   const topN = parseInt(document.getElementById('topN').value) || 10;
   const sorted = Object.entries(views).sort((a, b) => b[1].count - a[1].count).slice(0, topN);
 
-  const win = window.open('', '_blank');
-  win.document.write(`<h2 style="font-family:sans-serif">🔥 Top ${topN} video đã xem nhiều nhất</h2><hr>`);
+  let htmlContent = `<h2 style="font-family:sans-serif">🔥 Top ${topN} video đã xem nhiều nhất</h2><hr>`;
+  htmlContent += `<div class="video-container">`;
+
+  // Trích xuất thumbnail và title từ URL video
   for (const [id, info] of sorted) {
-    win.document.write(`
-      <p style="font-family:sans-serif">
-        <a href="https://www.youtube.com/watch?v=${id}" target="_blank">🎬 https://youtu.be/${id}</a><br>
+    const videoUrl = `https://www.youtube.com/watch?v=${id}`;
+    const videoTitle = `🎬 Video ID: ${id}`;
+    const thumbnailUrl = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+
+    htmlContent += `
+      <div class="video-item">
+        <a href="${videoUrl}" target="_blank">
+          <img src="${thumbnailUrl}" alt="${videoTitle}">
+          <p>${videoTitle}</p>
+        </a><br>
         👁️ <b>${info.count}</b> lượt xem — 🕓 Lần đầu: ${new Date(info.first).toLocaleDateString()}
-      </p><hr>
-    `);
+      </div>
+    `;
   }
-  win.document.close();
+
+  htmlContent += `</div>`;
+
+  // Cập nhật nội dung trong phần tử #content
+  const contentContainer = document.getElementById('content');
+  contentContainer.innerHTML = htmlContent;
 });
+
 
 document.getElementById('statsBtn').addEventListener('click', async () => {
   const result = await chrome.storage.local.get('ytViews');
@@ -79,4 +121,11 @@ document.getElementById('statsBtn').addEventListener('click', async () => {
   const totalVideos = Object.keys(views).length;
   const totalViews = Object.values(views).reduce((acc, cur) => acc + cur.count, 0);
   alert(`📊 Thống kê chi tiết:\n- Tổng video đã xem: ${totalVideos}\n- Tổng lượt xem: ${totalViews}`);
+});
+
+// Lắng nghe sự kiện Enter trong ô nhập số và tự động lọc số video
+document.getElementById('topN').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    document.getElementById('viewTopBtn').click();
+  }
 });

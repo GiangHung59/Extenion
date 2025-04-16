@@ -1,0 +1,3 @@
+youtube.com##[is-shorts]
+youtube.com##.ytp-ce-element
+youtube.com##ytd-rich-grid-renderer:style( --ytd-rich-grid-items-per-row: 5 !important; )

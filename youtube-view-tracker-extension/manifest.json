@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YouTube View Tracker",
-  "version": "1.2",
+  "version": "1.4",
   "description": "Hiển thị số lượt xem cá nhân trên YouTube và thống kê video đã xem, cho biết video đó bạn đã xem từ thời điểm đầu tiên",
   "permissions": [
     "storage", 
