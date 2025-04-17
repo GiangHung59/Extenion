@@ -1,5 +1,5 @@
-// Phiên bản: AutoUpdateTOC_v1
-// Tính năng: Tự động cập nhật mục lục khi người dùng gửi tin nhắn và AI trả lời
+// Phiên bản: AutoUpdateTOC_v3 2025-04-17 15:20:59
+// Tính năng: Tự động cập nhật mục lục khi người dùng gửi tin nhắn và AI trả lời, lưu vị trí cuộn, lưu trạng thái ẩn/hiện panel trên đám mây, tô sáng mục liên quan, ẩn nút Refresh, phân cấp tiêu đề h1/h2/h3 với biểu tượng, giữ cuộn theo trang, bỏ cuộn tự động khi AI trả lời
 (function () {
   "use strict";
 
@@ -21,7 +21,8 @@
     if (oldDragBottom) oldDragBottom.remove();
   };
 
-  const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const isDark = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)").matches : false;
+
   const colors = {
     bg: isDark ? "#1e1e1e" : "#ffffff",
     text: isDark ? "#eee" : "#111",
@@ -31,12 +32,20 @@
   };
 
   let panelWidth, panelTop, panelHeight, panelBottom;
+  let isPanelOpen = false;
+  let isRefreshing = false; // Biến để kiểm soát trạng thái làm mới TOC
 
-  chrome.storage.sync.get(["chatgpt-toc-panel-width", "chatgpt-toc-panel-top", "chatgpt-toc-panel-height"], (result) => {
+  chrome.storage.sync.get([
+    "chatgpt-toc-panel-width",
+    "chatgpt-toc-panel-top",
+    "chatgpt-toc-panel-height",
+    "chatgpt-toc-panel-open"
+  ], (result) => {
     panelWidth = parseInt(result["chatgpt-toc-panel-width"]) || 400;
     panelTop = parseInt(result["chatgpt-toc-panel-top"]) || 57;
     panelHeight = parseInt(result["chatgpt-toc-panel-height"]) || null;
     panelBottom = panelHeight ? (panelTop + panelHeight) : window.innerHeight;
+    isPanelOpen = result["chatgpt-toc-panel-open"] || false;
     createTOC();
   });
 
@@ -45,8 +54,9 @@
 
     const panel = document.createElement("div");
     panel.id = panelId;
+    panel.style.fontSize = "12px";
     panel.style.top = `${panelTop}px`;
-    panel.style.right = `-${panelWidth}px`;
+    panel.style.right = isPanelOpen ? "0px" : `-${panelWidth}px`;
     panel.style.width = `${panelWidth}px`;
     panel.style.height = panelHeight ? `${panelHeight}px` : `calc(100vh - ${panelTop}px)`;
 
@@ -54,7 +64,7 @@
     resizeHandle.id = resizeHandleId;
     resizeHandle.style.top = `${panelTop}px`;
     resizeHandle.style.height = panelHeight ? `${panelHeight}px` : `calc(100vh - ${panelTop}px)`;
-    resizeHandle.style.right = `-3px`;
+    resizeHandle.style.right = isPanelOpen ? `${panelWidth}px` : `-${3 + panelWidth}px`;
 
     const dragHandle = document.createElement("div");
     dragHandle.id = dragHandleId;
@@ -66,7 +76,7 @@
     toggle.id = toggleId;
     toggle.textContent = "TOC";
     toggle.style.top = `${panelTop + (panelHeight ? panelHeight : window.innerHeight - panelTop) / 2}px`;
-    toggle.style.right = "0px";
+    toggle.style.right = isPanelOpen ? `${panelWidth + 3}px` : "0px";
 
     panel.appendChild(resizeHandle);
     panel.appendChild(dragHandle);
@@ -86,10 +96,14 @@
     btnUser.textContent = "🧑‍💻 Tôi hỏi";
     btnAI.textContent = "🤖 AI trả lời";
     btnRefresh.textContent = "🔄";
+    btnUser.style.fontSize = "15px";
+    btnAI.style.fontSize = "15px";
+    btnRefresh.style.fontSize = "16px";
 
     tdUser.appendChild(btnUser);
     tdRefresh.appendChild(btnRefresh);
     tdAI.appendChild(btnAI);
+    tdRefresh.style.display = "none"; // Ẩn nút Refresh
     tabRow.appendChild(tdUser);
     tabRow.appendChild(tdRefresh);
     tabRow.appendChild(tdAI);
@@ -116,14 +130,20 @@
     let linksMap = new Map();
     let lastMessageCount = 0;
     let lastAssistantContent = "";
+    let lastScrollTop = 0;
 
     function buildTOC() {
+      const activeContainer = containerUser.style.display === "block" ? containerUser : containerAI;
+      lastScrollTop = activeContainer.scrollTop;
+
       containerUser.innerHTML = "";
       containerAI.innerHTML = "";
       linksMap.clear();
       let turn = 0;
       const blocks = document.querySelectorAll('[data-message-author-role]');
       lastMessageCount = blocks.length;
+
+      isRefreshing = true;
 
       let assistantContent = "";
       blocks.forEach((block) => {
@@ -132,44 +152,105 @@
         turn++;
         if (role === "user") {
           const id = `toc-user-${turn}`;
-          block.id = id; // Gán id trực tiếp vào block
+          block.id = id;
           const text = block.innerText.trim().split("\n")[0].slice(0, 100) || "(...)";
           const link = document.createElement("a");
           link.href = "#" + id;
           link.textContent = `💬 ${text}`;
+          link.style.fontSize = "14px";
           containerUser.appendChild(link);
           linksMap.set(block, { link, position: block.offsetTop });
 
           link.addEventListener('click', (e) => {
             e.preventDefault();
-            linksMap.forEach(item => item.link.style.background = "none");
-            link.style.background = colors.highlight;
+            resetLinkStyles();
+            highlightLink(link);
             document.querySelector(`#${id}`).scrollIntoView({ behavior: 'smooth' });
+            if (!isElementInViewport(link, activeContainer)) {
+              scrollPanelToLink(link, activeContainer);
+            }
           });
         }
         if (role === "assistant" && content) {
           assistantContent += content.innerText;
           const headers = content.querySelectorAll("h1,h2,h3");
+          const hasH1 = content.querySelector("h1") !== null;
+          const hasH2 = content.querySelector("h2") !== null;
           headers.forEach((header, i) => {
             const id = `toc-ai-${turn}-${i}`;
-            header.id = id; // Gán id trực tiếp vào header
+            header.id = id;
             const link = document.createElement("a");
             link.href = "#" + id;
-            link.textContent = `📌 ${header.textContent}`;
+            if (header.tagName === "H1") {
+              link.textContent = `📌 ${header.textContent}`; // Icon ghim cho h1
+              link.style.marginLeft = "0px";
+            } else if (header.tagName === "H2") {
+              link.textContent = `➤ ${header.textContent}`; // Icon mũi tên cho h2
+              link.style.marginLeft = hasH1 ? "10px" : "0px";
+            } else if (header.tagName === "H3") {
+              if (!hasH1 && !hasH2) {
+                link.textContent = `📌 ${header.textContent}`; // Icon ghim như h1
+                link.style.marginLeft = "0px"; // Không thụt lề như h1
+              } else if (!hasH1 && hasH2) {
+                link.textContent = `➤ ${header.textContent}`; // Icon mũi tên như h2
+                link.style.marginLeft = "10px"; // Thụt lề như h2
+              } else {
+                link.textContent = `◦ ${header.textContent}`; // Icon vòng tròn cho h3
+                link.style.marginLeft = "20px"; // Thụt lề như h3
+              }
+            }
+            link.style.fontSize = "14px";
             containerAI.appendChild(link);
             linksMap.set(header, { link, position: header.offsetTop });
 
             link.addEventListener('click', (e) => {
               e.preventDefault();
-              linksMap.forEach(item => item.link.style.background = "none");
-              link.style.background = colors.highlight;
+              resetLinkStyles();
+              highlightLink(link);
               document.querySelector(`#${id}`).scrollIntoView({ behavior: 'smooth' });
+              if (!isElementInViewport(link, activeContainer)) {
+                scrollPanelToLink(link, activeContainer);
+              }
             });
           });
         }
       });
       lastAssistantContent = assistantContent;
+
+      activeContainer.scrollTop = lastScrollTop;
+
+      setTimeout(() => {
+        isRefreshing = false;
+      }, 500);
+
       setupScrollSync();
+    }
+
+    function resetLinkStyles() {
+      linksMap.forEach(item => {
+        item.link.style.background = "none";
+        item.link.style.border = "none";
+        item.link.style.color = colors.text;
+      });
+    }
+
+    function highlightLink(link) {
+      link.style.background = colors.highlight;
+      link.style.border = `1px solid ${isDark ? "#60a5fa" : "#2563eb"}`;
+      link.style.color = isDark ? "#ffffff" : "#000000";
+    }
+
+    function scrollPanelToLink(link, container) {
+      const linkRect = link.getBoundingClientRect();
+      const panelRect = container.getBoundingClientRect();
+      const scrollTarget = (linkRect.top - panelRect.top + container.scrollTop) - (panelRect.height / 2) + (linkRect.height / 2);
+      container.scrollTo({ top: scrollTarget, behavior: 'smooth' });
+    }
+
+    function isElementInViewport(el, container) {
+      const rect = el.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      return rect.top >= containerRect.top && rect.bottom <= containerRect.bottom;
     }
 
     btnUser.onclick = () => {
@@ -184,10 +265,26 @@
       btnUser.style.background = colors.active;
       btnAI.style.background = colors.highlight;
     };
+
     btnRefresh.onclick = () => {
+      highlightObserver.disconnect();
       buildTOC();
       setupScrollSync();
     };
+
+    function toggleTOC() {
+      isPanelOpen = !isPanelOpen;
+      if (isPanelOpen) {
+        panel.style.right = "0px";
+        resizeHandle.style.right = `${panelWidth}px`;
+        toggle.style.right = `${panelWidth + 3}px`;
+      } else {
+        panel.style.right = `-${panelWidth}px`;
+        resizeHandle.style.right = `-${3 + panelWidth}px`;
+        toggle.style.right = "0px";
+      }
+      chrome.storage.sync.set({ "chatgpt-toc-panel-open": isPanelOpen });
+    }
 
     toggle.onmouseover = () => {
       toggle.style.opacity = "1";
@@ -197,18 +294,14 @@
       toggle.style.opacity = "0.5";
       toggle.style.boxShadow = "none";
     };
-    toggle.onclick = () => {
-      const open = panel.style.right === "0px";
-      if (open) {
-        panel.style.right = `-${panelWidth}px`;
-        resizeHandle.style.right = `-${3 + panelWidth}px`;
-        toggle.style.right = "0px";
-      } else {
-        panel.style.right = "0px";
-        resizeHandle.style.right = `${panelWidth}px`;
-        toggle.style.right = `${panelWidth + 3}px`;
+    toggle.onclick = toggleTOC;
+
+    document.addEventListener('keydown', (e) => {
+      if (e.altKey && e.key === 's') {
+        e.preventDefault();
+        toggleTOC();
       }
-    };
+    });
 
     let isResizing = false;
     resizeHandle.onmousedown = () => {
@@ -246,7 +339,7 @@
         panelBottom = panelTop + newHeight;
         panel.style.height = `${newHeight}px`;
         resizeHandle.style.height = `${newHeight}px`;
-        toggle.style.top = `${panelTop + newHeight / 2}px`;
+        toggle.style.top = `${newTop + newHeight / 2}px`;
       } else if (isResizing) {
         const newWidth = Math.max(200, Math.min(800, window.innerWidth - e.clientX));
         panelWidth = newWidth;
@@ -278,12 +371,11 @@
     const observer = new MutationObserver((mutations, obs) => {
       const chatContainer = document.querySelector('[data-message-author-role]');
       if (chatContainer) {
-        panel.style.right = "0px";
-        resizeHandle.style.right = `${panelWidth}px`;
-        toggle.style.right = `${panelWidth + 3}px`;
+        panel.style.right = isPanelOpen ? "0px" : `-${panelWidth}px`;
+        resizeHandle.style.right = isPanelOpen ? `${panelWidth}px` : `-${3 + panelWidth}px`;
+        toggle.style.right = isPanelOpen ? `${panelWidth + 3}px` : "0px";
         buildTOC();
 
-        // Tự động cập nhật TOC khi có tin nhắn mới
         setInterval(() => {
           const currentMessageCount = document.querySelectorAll('[data-message-author-role]').length;
           let currentAssistantContent = "";
@@ -294,7 +386,7 @@
           if (currentMessageCount !== lastMessageCount || currentAssistantContent !== lastAssistantContent) {
             buildTOC();
           }
-        }, 500);
+        }, 2000);
 
         btnAI.click();
         setupScrollSync();
@@ -327,34 +419,18 @@
 
       const activeContainer = () => containerUser.style.display === "block" ? containerUser : containerAI;
 
-      chatArea.addEventListener('scroll', () => {
-        const container = activeContainer();
-        if (!container || panel.style.right !== "0px" || linksMap.size === 0) return;
-
-        const chatScrollHeight = chatArea.scrollHeight - chatArea.clientHeight;
-        const chatScrollTop = chatArea.scrollTop;
-        if (chatScrollHeight <= 0) return;
-
-        const chatScrollRatio = chatScrollTop / chatScrollHeight;
-
-        const tocScrollHeight = container.scrollHeight - container.clientHeight;
-        if (tocScrollHeight <= 0) return;
-
-        const tocScrollTarget = tocScrollHeight * chatScrollRatio;
-        container.scrollTop = tocScrollTarget;
-      });
-
       const highlightObserver = new IntersectionObserver((entries) => {
         const container = activeContainer();
-        if (!container || panel.style.right !== "0px") return;
+        if (!container || panel.style.right !== "0px" || isRefreshing) return;
 
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             const chatElement = entry.target;
             const { link } = linksMap.get(chatElement) || {};
             if (link) {
-              linksMap.forEach(item => item.link.style.background = "none");
-              link.style.background = colors.highlight;
+              resetLinkStyles();
+              highlightLink(link);
+              // Sửa: Bỏ scrollPanelToLink để không cuộn tự động khi AI trả lời
             }
           }
         });
@@ -367,11 +443,24 @@
         highlightObserver.observe(chatElement);
       });
 
-      btnRefresh.onclick = () => {
-        highlightObserver.disconnect();
-        buildTOC();
-        setupScrollSync();
-      };
+      chatArea.addEventListener('scroll', () => {
+        const container = activeContainer();
+        if (!container || panel.style.right !== "0px" || linksMap.size === 0 || isRefreshing) return;
+
+        const chatScrollHeight = chatArea.scrollHeight - chatArea.clientHeight;
+        const chatScrollTop = chatArea.scrollTop;
+        if (chatScrollHeight <= 0) return;
+
+        const chatScrollRatio = chatScrollTop / chatScrollHeight;
+
+        const tocScrollHeight = container.scrollHeight - container.clientHeight;
+        if (tocScrollHeight <= 0) return;
+
+        const tocScrollTarget = tocScrollHeight * chatScrollRatio;
+        if (Math.abs(container.scrollTop - lastScrollTop) > 1) {
+          container.scrollTop = tocScrollTarget;
+        }
+      });
     }
   }
 })();
