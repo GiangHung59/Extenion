@@ -43,13 +43,18 @@
 
     /* Cập nhật lưới video để hiển thị tốt hơn */
     .video-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Mở rộng cột để các video hiển thị lớn hơn */
-      gap: 30px; /* Tăng khoảng cách giữa các video */
-      margin-top: 20px;
-      justify-items: center;
-      max-width: 100%; /* Mở rộng khu vực chứa video */
-    }
+	  display: grid;
+	  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Giữ nguyên cấu trúc lưới */
+	  gap: 10px; /* Khoảng cách giữa các video */
+	  margin-top: 20px;
+	  justify-items: start; /* Dịch các video sang trái */
+	  max-width: 100%;
+	  padding: 20px 20px 20px 1px; /* Thêm padding-left 10px để các video cách mép trái 10px */
+	  box-sizing: border-box;
+	  max-height: 100vh; /* Giới hạn chiều cao của video-container (70% cửa sổ) */
+	}
+
+
     .video-item {
       width: 100%;  /* Mở rộng video-item */
       max-width: 300px; /* Giới hạn kích thước của mỗi video-item */
@@ -73,7 +78,7 @@
 
     /* Điều chỉnh kích thước ô nhập số */
     #topN {
-      width: 70px;
+      width: 100%;
       margin-top: 8px;
     }
 
@@ -91,6 +96,40 @@
     body.dark .video-item p {
       color: #ccc;
     }
+
+    /* Flexbox cho ô nhập số và nút "Xem video" */
+    .input-container {
+      display: flex;
+      margin-top: 20px;
+      width: 100%;
+      justify-content: space-between;
+    }
+    #topN {
+      width: 30%; /* Chiếm 20% chiều rộng */
+    }
+    #viewTopBtn {
+      width: 68%; /* Chiếm 80% chiều rộng */
+    }
+
+    /* Các nút khác vẫn giữ nguyên */
+    .input-container input[type="number"], .input-container button {
+      width: 100%; /* Đảm bảo các nút và ô nhập số khác vẫn giữ độ rộng 100% */
+    }
+
+    /* Link hướng dẫn */
+    .guide-link {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      font-size: 14px;
+      color: #007bff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .guide-link:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -98,10 +137,25 @@
   <input type="file" id="jsonUpload">
   <button id="exportBtn">💾 Xuất dữ liệu JSON</button>
   <button id="statsBtn">📊 Thống kê chi tiết</button>
-  <input type="number" id="topN" placeholder="10" value="10">
-  <button id="viewTopBtn">🔥 Xem video xem nhiều nhất</button>
+
+  <!-- Sử dụng flexbox cho ô nhập số và nút "Xem video" -->
+  <div class="input-container">
+    <input type="number" id="topN" placeholder="10" value="10">
+    <button id="viewTopBtn">🔥Top views</button>
+  </div>
+
   <button id="clearDataBtn">🧹 Xóa Dữ Liệu</button>
 
   <script src="popup.js"></script>
+
+  <!-- Link hướng dẫn -->
+  <a href="https://github.com/GiangHung59/YouTube-View-Tracker/wiki" 
+     target="_blank" 
+     class="guide-link">Hướng dẫn</a>
+	 
+  <div id="content">
+  <!-- Nội dung các video sẽ được cập nhật vào đây -->
+  </div>
+	 
 </body>
 </html>
