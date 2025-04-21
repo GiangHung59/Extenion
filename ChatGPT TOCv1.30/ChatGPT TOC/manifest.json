@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "ChatGPT TOC Panel",
+  "version": "1.30",
+  "description": "Tạo mục lục cuộc hội thoại ChatGPT với tab 'Tôi hỏi' và 'AI trả lời', sử dụng phím tắt ALT+S để ẩn hiện",
+  "permissions": [
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://chatgpt.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ],
+  "icons": {
+    "128": "icon.png"
+  }
+}

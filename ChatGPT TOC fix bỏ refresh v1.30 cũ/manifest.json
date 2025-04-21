@@ -1,0 +1,40 @@
+<<<<<<< HEAD
+{
+  "manifest_version": 3,
+  "name": "ChatGPT TOC Panel",
+  "version": "1.30",
+  "description": "Tạo mục lục cuộc hội thoại ChatGPT với tab 'Tôi hỏi' và 'AI trả lời', hỗ trợ kéo dọc, đồng bộ cuộn, tô sáng mục lục.",
+  "permissions": [
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://chatgpt.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ],
+  "icons": {
+    "128": "icon.png"
+  }
+=======
+{
+  "manifest_version": 3,
+  "name": "ChatGPT TOC Panel",
+  "version": "1.30",
+  "description": "Tạo mục lục cuộc hội thoại ChatGPT với tab 'Tôi hỏi' và 'AI trả lời', hỗ trợ kéo dọc, đồng bộ cuộn, tô sáng mục lục.",
+  "permissions": [
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://chatgpt.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ],
+  "icons": {
+    "128": "icon.png"
+  }
+>>>>>>> 4e1b1bf87794a8cad836205121720b381cc21a70
+}
