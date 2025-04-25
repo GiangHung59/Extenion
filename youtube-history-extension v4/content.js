@@ -1,16 +1,25 @@
-// === CẬP NHẬT VIEW VIDEO CHÍNH (GÓC PHẢI TRÊN TIÊU ĐỀ) ===
+// === CẬP NHẬT VIEW VIDEO CHÍNH (GÓC PHẢI, KHÔNG CHỒNG TIÊU ĐỀ) ===
 async function updateMainVideoView() {
   try {
     const videoId = new URL(location.href).searchParams.get('v');
-    if (!videoId || !chrome.storage?.local) return;
+    if (!videoId || !chrome.storage?.local) {
+      console.warn("Không có videoId hoặc chrome.storage.local không khả dụng");
+      return;
+    }
 
     const { ytViews } = await chrome.storage.local.get('ytViews');
     const viewsData = ytViews || {};
     const data = viewsData[videoId];
-    if (!data) return;
+    if (!data) {
+      console.warn("Không có dữ liệu lượt xem cho videoId:", videoId);
+      return;
+    }
 
     const titleBar = document.querySelector('#above-the-fold #title h1');
-    if (!titleBar) return;
+    if (!titleBar) {
+      console.warn("Không tìm thấy titleBar với bộ chọn '#above-the-fold #title h1'");
+      return;
+    }
 
     const old = document.querySelector('#main-video-view-counter');
     if (old) old.remove();
@@ -21,15 +30,19 @@ async function updateMainVideoView() {
       position: absolute;
       top: 0;
       right: 0;
+      background: rgba(0, 0, 0, 0);
       color: #fff;
       padding: 4px 8px;
       font-size: 13px;
+      border-radius: 3px;
       z-index: 1000;
+      transform: translateX(100%);
     `;
     const firstDate = new Date(data.first).toLocaleDateString();
     viewDisplay.textContent = `👁️  ${data.count}    🕘 ${firstDate}`;
 
     titleBar.style.position = 'relative';
+    titleBar.style.overflow = 'visible';
     titleBar.appendChild(viewDisplay);
   } catch (err) {
     console.warn("Không thể hiển thị view video chính:", err);
@@ -51,17 +64,14 @@ async function updateAllThumbnails() {
       if (!badge) {
         badge = document.createElement('span');
         badge.className = 'view-count-badge';
-
-        // === VỊ TRÍ HIỂN THỊ BADGE 👇 ===
         badge.style = `
           position: absolute;
           bottom: 4px;
           left: 4px;
-          background: rgba(0,0,0,0.7); color: white;
+          background: rgba(0,0,0,0); color: white;
           padding: 2px 4px; font-size: 10px;
           border-radius: 3px; z-index: 1000;
         `;
-
         el.appendChild(badge);
       }
       badge.textContent = `👁️ ${viewsData[videoId].count}`;
@@ -79,7 +89,7 @@ const observeUrlChange = () => {
       lastUrl = location.href;
       setTimeout(() => {
         updateAllThumbnails();
-        updateMainVideoView(); // GỌI TRỰC TIẾP
+        updateMainVideoView();
       }, 500);
     }
   });
@@ -97,27 +107,20 @@ const observeNewThumbnails = () => {
       }
     }
   });
-
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true
-  });
+  observer.observe(document.body, { childList: true, subtree: true });
 };
 
 // === TỰ CẬP NHẬT LƯỢT XEM MỚI KHI XEM VIDEO ===
 const updateVideoViewCount = async () => {
   const videoId = new URL(location.href).searchParams.get('v');
   if (!videoId || !chrome.storage?.local) return;
-
   const { ytViews } = await chrome.storage.local.get('ytViews');
   const viewsData = ytViews || {};
-
   if (!viewsData[videoId]) {
-    viewsData[videoId] = { count: 1, first: new Date().toISOString() }; // Đặt lần xem đầu tiên
+    viewsData[videoId] = { count: 1, first: new Date().toISOString() };
   } else {
-    viewsData[videoId].count += 1; // Tăng số lượt xem
+    viewsData[videoId].count += 1;
   }
-
   await chrome.storage.local.set({ ytViews: viewsData });
 };
 
@@ -129,4 +132,4 @@ setTimeout(() => {
 
 observeUrlChange();
 observeNewThumbnails();
-updateVideoViewCount(); // Cập nhật lượt xem ngay khi trang video load
+updateVideoViewCount();
