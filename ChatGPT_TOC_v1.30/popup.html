@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>ChatGPT TOC Settings</title>
+  <style>
+    body {
+      width: 300px;
+      padding: 15px;
+      font-family: Arial, sans-serif;
+    }
+    h2 {
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+    .setting-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    select {
+      width: 100%;
+      padding: 5px;
+      margin-bottom: 10px;
+    }
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+    }
+    button {
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #saveBtn {
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+    }
+    #cancelBtn {
+      background-color: transparent;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h2>ChatGPT TOC Settings</h2>
+  
+  <div class="setting-group">
+    <label for="language">Ngôn ngữ:</label>
+    <select id="language">
+      <option value="en">Tiếng Anh</option>
+      <option value="vi">Tiếng Việt</option>
+    </select>
+  </div>
+  
+  <div class="setting-group">
+    <label for="theme">Chế độ:</label>
+    <select id="theme">
+      <option value="light">Sáng</option>
+      <option value="dark">Tối</option>
+      <option value="auto">Tự động (theo trình duyệt)</option>
+    </select>
+  </div>
+  
+  <div class="setting-group">
+    <label for="fontSize">Cỡ chữ:</label>
+    <select id="fontSize">
+      <option value="10">10px (Rất nhỏ)</option>
+      <option value="12">12px (Nhỏ)</option>
+      <option value="14">14px (Vừa)</option>
+      <option value="16">16px (Lớn)</option>
+      <option value="18">18px (Rất lớn)</option>
+    </select>
+  </div>
+  
+  <div class="buttons">
+    <button id="cancelBtn">Hủy</button>
+    <button id="saveBtn">Lưu</button>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

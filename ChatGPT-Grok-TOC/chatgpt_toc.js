@@ -1,13 +1,15 @@
-// Phiên bản: AutoUpdateTOC_v4 2025-04-19 17:49:01
-// Tính năng: Tự động cập nhật mục lục khi người dùng gửi tin nhắn và AI trả lời, lưu vị trí cuộn, lưu trạng thái ẩn/hiện panel trên đám mây, tô sáng mục liên quan, ẩn nút Refresh, phân cấp tiêu đề h1/h2/h3 với biểu tượng, giữ cuộn theo trang, bỏ cuộn tự động khi AI trả lời
+// chatgpt_toc.js - Mã nguồn cho tiện ích TOC trên ChatGPT
 (function () {
   "use strict";
 
+  // Các ID cho các phần tử DOM
   const panelId = "chatgpt-toc-panel";
   const toggleId = "chatgpt-toc-toggle";
   const resizeHandleId = "chatgpt-toc-resize";
   const dragHandleId = "chatgpt-toc-drag";
   const dragHandleBottomId = "chatgpt-toc-drag-bottom";
+  
+  // Xóa các phần tử cũ nếu có
   const removeOld = () => {
     const oldPanel = document.getElementById(panelId);
     const oldToggle = document.getElementById(toggleId);
@@ -21,6 +23,7 @@
     if (oldDragBottom) oldDragBottom.remove();
   };
 
+  // Lấy chế độ màu và thiết lập màu sắc
   const isDark = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)").matches : false;
 
   const colors = {
@@ -31,10 +34,12 @@
     highlight: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"
   };
 
+  // Các biến lưu trạng thái và kích thước panel
   let panelWidth, panelTop, panelHeight, panelBottom;
   let isPanelOpen = false;
   let isRefreshing = false;
 
+  // Lấy cài đặt từ storage
   chrome.storage.sync.get([
     "chatgpt-toc-panel-width",
     "chatgpt-toc-panel-top",
@@ -52,6 +57,7 @@
   function createTOC() {
     removeOld();
 
+    // Tạo panel chính
     const panel = document.createElement("div");
     panel.id = panelId;
     panel.style.fontSize = "12px";
@@ -60,23 +66,26 @@
     panel.style.width = `${panelWidth}px`;
     panel.style.height = panelHeight ? `${panelHeight}px` : `calc(100vh - ${panelTop}px)`;
 
+    // Tạo thanh resize
     const resizeHandle = document.createElement("div");
     resizeHandle.id = resizeHandleId;
     resizeHandle.style.top = `${panelTop}px`;
     resizeHandle.style.height = panelHeight ? `${panelHeight}px` : `calc(100vh - ${panelTop}px)`;
     resizeHandle.style.right = isPanelOpen ? `${panelWidth}px` : `-${3 + panelWidth}px`;
 
+    // Tạo thanh kéo thả
     const dragHandle = document.createElement("div");
     dragHandle.id = dragHandleId;
 
     const dragHandleBottom = document.createElement("div");
     dragHandleBottom.id = dragHandleBottomId;
 
-    // Tạo nút TOC (không đổi giao diện, chỉ xử lý vị trí và phím tắt)
+    // Tạo nút TOC
     const toggle = document.createElement("button");
     toggle.id = toggleId;
     toggle.textContent = "TOC";
-    // Đặt vị trí top để luôn ở giữa panel (sử dụng transform để căn giữa thật sự)
+    
+    // Cập nhật vị trí toggle
     const updateTogglePos = () => {
       const ph = panelHeight ? panelHeight : (window.innerHeight - panelTop);
       toggle.style.top = `${panelTop + ph / 2}px`;
@@ -85,13 +94,13 @@
     updateTogglePos();
     toggle.style.right = isPanelOpen ? `${panelWidth + 3}px` : "0px";
     toggle.style.position = "fixed";
-    // Các style khác giữ nguyên mặc định (giao diện gốc)
 
     panel.appendChild(resizeHandle);
     panel.appendChild(dragHandle);
     panel.appendChild(dragHandleBottom);
     document.body.appendChild(toggle);
 
+    // Tạo bảng tab
     const tabTable = document.createElement("table");
     const tabRow = document.createElement("tr");
     const tdUser = document.createElement("td");
@@ -119,6 +128,7 @@
     tabTable.appendChild(tabRow);
     panel.appendChild(tabTable);
 
+    // Tạo container cho nội dung
     const containerUser = document.createElement("div");
     const containerAI = document.createElement("div");
     containerUser.style.display = "none";
@@ -141,6 +151,7 @@
     let lastAssistantContent = "";
     let lastScrollTop = 0;
 
+    // Xây dựng mục lục
     function buildTOC() {
       const activeContainer = containerUser.style.display === "block" ? containerUser : containerAI;
       lastScrollTop = activeContainer.scrollTop;
@@ -235,6 +246,7 @@
       setupScrollSync();
     }
 
+    // Reset style của tất cả các link
     function resetLinkStyles() {
       linksMap.forEach(item => {
         item.link.style.background = "none";
@@ -243,12 +255,14 @@
       });
     }
 
+    // Highlight link đang active
     function highlightLink(link) {
       link.style.background = colors.highlight;
       link.style.border = `1px solid ${isDark ? "#60a5fa" : "#2563eb"}`;
       link.style.color = isDark ? "#ffffff" : "#000000";
     }
 
+    // Cuộn panel để hiển thị link
     function scrollPanelToLink(link, container) {
       const linkRect = link.getBoundingClientRect();
       const panelRect = container.getBoundingClientRect();
@@ -256,12 +270,14 @@
       container.scrollTo({ top: scrollTarget, behavior: 'smooth' });
     }
 
+    // Kiểm tra xem một phần tử có nằm trong viewport của container hay không
     function isElementInViewport(el, container) {
       const rect = el.getBoundingClientRect();
       const containerRect = container.getBoundingClientRect();
       return rect.top >= containerRect.top && rect.bottom <= containerRect.bottom;
     }
 
+    // Xử lý sự kiện click tab
     btnUser.onclick = () => {
       containerUser.style.display = "block";
       containerAI.style.display = "none";
@@ -275,12 +291,12 @@
       btnAI.style.background = colors.highlight;
     };
 
+    // Xử lý sự kiện click nút refresh
     btnRefresh.onclick = () => {
-      highlightObserver.disconnect();
       buildTOC();
-      setupScrollSync();
     };
 
+    // Hàm ẩn/hiện TOC
     function toggleTOC() {
       isPanelOpen = !isPanelOpen;
       if (isPanelOpen) {
@@ -295,6 +311,7 @@
       chrome.storage.sync.set({ "chatgpt-toc-panel-open": isPanelOpen });
     }
 
+    // Hiệu ứng hover cho nút TOC
     toggle.onmouseover = () => {
       toggle.style.opacity = "1";
       toggle.style.boxShadow = "0 0 10px rgba(255,255,255,0.5)";
@@ -305,7 +322,7 @@
     };
     toggle.onclick = toggleTOC;
 
-    // Hotkey ALT+S: luôn đồng bộ với chức năng toggleTOC
+    // Thiết lập phím tắt ALT+S
     document.addEventListener('keydown', (e) => {
       if (e.altKey && (e.key === 's' || e.key === 'S')) {
         e.preventDefault();
@@ -313,12 +330,14 @@
       }
     });
 
+    // Xử lý sự kiện resize panel
     let isResizing = false;
     resizeHandle.onmousedown = () => {
       isResizing = true;
       document.body.style.userSelect = "none";
     };
 
+    // Xử lý sự kiện kéo thả panel
     let isDragging = false;
     dragHandle.onmousedown = () => {
       isDragging = true;
@@ -331,6 +350,7 @@
       document.body.style.userSelect = "none";
     };
 
+    // Xử lý sự kiện di chuyển chuột
     document.onmousemove = (e) => {
       if (isDragging) {
         const newTop = Math.max(0, Math.min(panelBottom - 200, e.clientY));
@@ -361,6 +381,7 @@
       }
     };
 
+    // Xử lý sự kiện thả chuột
     document.onmouseup = () => {
       if (isDragging) {
         isDragging = false;
@@ -382,6 +403,7 @@
 
     document.body.appendChild(panel);
 
+    // Thiết lập observer để theo dõi thay đổi DOM
     const observer = new MutationObserver((mutations, obs) => {
       const chatContainer = document.querySelector('[data-message-author-role]');
       if (chatContainer) {
@@ -391,6 +413,7 @@
         updateTogglePos();
         buildTOC();
 
+        // Kiểm tra và cập nhật TOC định kỳ
         setInterval(() => {
           const currentMessageCount = document.querySelectorAll('[data-message-author-role]').length;
           let currentAssistantContent = "";
@@ -410,6 +433,7 @@
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
+    // Theo dõi thay đổi URL
     let lastUrl = location.href;
     new MutationObserver(() => {
       const currentUrl = location.href;
@@ -420,61 +444,25 @@
       }
     }).observe(document, { subtree: true, childList: true });
 
+    // Thiết lập đồng bộ cuộn
     function setupScrollSync() {
-      const chatElements = document.querySelectorAll('[data-message-author-role]');
-      if (!chatElements.length || linksMap.size === 0) return;
-
-      let chatArea = chatElements[0].parentElement;
-      while (chatArea && chatArea !== document.body && getComputedStyle(chatArea).overflowY !== "auto" && getComputedStyle(chatArea).overflowY !== "scroll") {
-        chatArea = chatArea.parentElement;
-      }
-      if (!chatArea || chatArea === document.body) {
-        chatArea = document.querySelector('div[class*="react-scroll-to-bottom"]') || document.querySelector('main') || document.body;
-      }
-
-      const activeContainer = () => containerUser.style.display === "block" ? containerUser : containerAI;
-
       const highlightObserver = new IntersectionObserver((entries) => {
-        const container = activeContainer();
-        if (!container || panel.style.right !== "0px" || isRefreshing) return;
-
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            const chatElement = entry.target;
-            const { link } = linksMap.get(chatElement) || {};
-            if (link) {
+            const target = entry.target;
+            if (linksMap.has(target)) {
               resetLinkStyles();
-              highlightLink(link);
+              highlightLink(linksMap.get(target).link);
             }
           }
         });
-      }, {
-        root: chatArea,
-        threshold: 0.5
+      }, { threshold: 0.5 });
+
+      linksMap.forEach((_, element) => {
+        highlightObserver.observe(element);
       });
 
-      linksMap.forEach((item, chatElement) => {
-        highlightObserver.observe(chatElement);
-      });
-
-      chatArea.addEventListener('scroll', () => {
-        const container = activeContainer();
-        if (!container || panel.style.right !== "0px" || linksMap.size === 0 || isRefreshing) return;
-
-        const chatScrollHeight = chatArea.scrollHeight - chatArea.clientHeight;
-        const chatScrollTop = chatArea.scrollTop;
-        if (chatScrollHeight <= 0) return;
-
-        const chatScrollRatio = chatScrollTop / chatScrollHeight;
-
-        const tocScrollHeight = container.scrollHeight - container.clientHeight;
-        if (tocScrollHeight <= 0) return;
-
-        const tocScrollTarget = tocScrollHeight * chatScrollRatio;
-        if (Math.abs(container.scrollTop - lastScrollTop) > 1) {
-          container.scrollTop = tocScrollTarget;
-        }
-      });
+      return highlightObserver;
     }
   }
 })();
