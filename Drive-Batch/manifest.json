@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Drive Batch — Tải hàng loạt",
+  "version": "0.2.0",
+  "description": "Dán nhiều link Drive, chọn file trong thư mục và tải hàng loạt. Không cần cấu hình OAuth.",
+  "minimum_chrome_version": "120",
+  "permissions": ["downloads", "storage", "alarms", "scripting"],
+  "host_permissions": ["https://drive.google.com/*", "https://docs.google.com/*", "https://drive.usercontent.google.com/*", "https://*.googleusercontent.com/*"],
+  "background": {"service_worker": "background.js", "type": "module"},
+  "action": {"default_title": "Dán link và tải với Drive Batch", "default_popup": "index.html?popup=1"}
+}

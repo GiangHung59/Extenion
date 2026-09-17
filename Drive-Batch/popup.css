@@ -1,0 +1,46 @@
+html.popup{width:760px;height:580px;overflow:hidden}
+.popup body{width:760px;height:580px;overflow:auto}
+.popup aside{display:none}
+.popup main{margin:0;padding:18px 20px 16px;max-width:none}
+.popup header{margin:0 0 14px;gap:12px;align-items:center}
+.popup .eyebrow{font-size:9px;letter-spacing:1.5px}
+.popup h1{font-size:24px;letter-spacing:-.6px;margin:7px 0 5px;line-height:1.2}
+.popup header p{margin:0;font-size:12px}
+.popup .format-note{display:none}
+.popup .input-card{padding:14px}
+.popup .input-card label{font-size:13px;margin-bottom:9px}
+.popup .input-card label span{display:inline;margin-left:8px}
+.popup textarea{min-height:94px;height:94px;font-size:12px;line-height:1.6;padding:9px 12px;max-height:170px}
+.popup .input-footer{margin-top:8px}
+.popup .input-footer span{display:inline;font-size:10px}
+.popup .input-footer button{padding:8px 13px;font-size:12px}
+.popup .queue{margin-top:14px}
+.popup .section-heading{padding:13px 14px 11px}
+.popup h2{font-size:16px}
+.popup .section-heading p{margin-top:5px;font-size:11px}
+.popup .section-heading .quiet{max-width:none}
+.popup .toolbar{padding:10px 14px;flex-wrap:wrap;gap:10px}
+.popup .toolbar button{padding:7px 9px;font-size:10px}
+.popup .check-label{font-size:11px}
+.popup #empty{padding:19px 15px}
+.popup .empty-icon{display:none}
+.popup #empty h3{margin:0;font-size:12px}
+.popup #empty p{font-size:11px;margin:7px 0 0}
+.popup .table-wrap{max-height:220px;overflow:auto}
+.popup th{position:sticky;top:0;z-index:1;padding:10px 8px}
+.popup td{padding:11px 8px}
+.popup td:first-child,.popup th:first-child{padding-left:13px;width:34px}
+.popup .file-name{max-width:210px;font-size:11px}
+.popup .file-url{max-width:200px;font-size:9px}
+.popup .file-type{font-size:10px}
+.popup .status{font-size:10px;max-width:170px}
+.popup .row-actions{flex-wrap:wrap}
+.popup .row-actions button{font-size:9px;padding:5px 6px}
+.popup footer{margin:10px 0;font-size:9px;flex-direction:row;gap:8px}
+.popup .notice{font-size:10px;padding:8px 11px}
+.popup dialog{width:710px;max-height:550px;padding:18px}
+.popup .folder-options{flex-direction:row;margin:12px 0}
+.popup dialog p{font-size:12px;margin:10px 0}
+.popup #folder-items{max-height:160px}
+.popup .scan-actions{margin:10px 0}
+.popup .dialog-footer{margin-top:10px;padding-top:10px}
