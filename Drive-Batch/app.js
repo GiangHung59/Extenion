@@ -1,12 +1,14 @@
 import {parseBatch, parseLink} from './core.js';
+import {installIdleHide} from './idle-hide.js';
 const $=id=>document.getElementById(id);
 let batch={items:[],paused:true},folder=null,folderItems=new Map(),folderBusy=false;
+const prefixDrafts=new Map();
 const local=globalThis.chrome?.storage?.local;
 function saveDraft(){return local?.set({linkDraft:$('links').value}).catch(error);}
 function saveFolder(){return local?.set({folderDraft:folder?{folder,items:[...folderItems.values()],message:$('folder-status').textContent}:null}).catch(error);}
 if(document.documentElement.classList.contains('popup')) {
   document.querySelector('h1').textContent='Tải file từ Google Drive';
-  document.querySelector('header p').textContent='Dán link ngay tại đây. Đóng popup vẫn tiếp tục tải.';
+  document.querySelector('header p').textContent='Dán link ngay tại đây. Ẩn công cụ vẫn tiếp tục tải.';
 }
 $('links').addEventListener('input',saveDraft);
 const types={file:'File gốc',folder:'Thư mục',document:'Word .docx',spreadsheets:'Excel .xlsx',presentation:'PowerPoint .pptx'};
@@ -17,6 +19,8 @@ function button(text,action) {const el=element('button','',text);el.addEventList
 async function refresh(){batch=await send('get');render();}
 function selected(){return batch.items.filter(i=>i.selected&&i.type!=='folder');}
 function render() {
+  const focused=document.activeElement;
+  const editing=focused?.classList.contains('file-prefix')?{id:focused.dataset.id,start:focused.selectionStart,end:focused.selectionEnd}:null;
   const files=batch.items.filter(i=>i.type!=='folder');
   const count=selected().length;
   $('count').textContent=batch.items.length;
@@ -33,6 +37,18 @@ function render() {
     const box=element('td');const input=element('input');input.type='checkbox';input.checked=item.selected;input.disabled=item.type==='folder';input.setAttribute('aria-label',`Chọn ${item.name}`);
     input.addEventListener('change',()=>send('select',{ids:[item.id],selected:input.checked}).then(s=>{batch=s;render();}).catch(error));box.append(input);
     const name=element('td');name.append(element('div','file-name',`${item.type==='folder'?'▱ ':''}${item.name}`));
+    if(item.type!=='folder') {
+      const label=element('label','file-prefix-label','Thêm trước tên file');
+      const prefix=element('input','file-prefix');prefix.type='text';prefix.maxLength=100;
+      prefix.dataset.id=item.id;prefix.value=prefixDrafts.get(item.id)??item.prefix??'';
+      prefix.placeholder='Để trống để giữ tên gốc';prefix.setAttribute('aria-label',`Thêm trước tên file ${item.name}`);
+      prefix.disabled=['queued','preparing','downloading'].includes(item.status);
+      prefix.addEventListener('input',()=>{
+        prefixDrafts.set(item.id,prefix.value);
+        send('prefix',{id:item.id,prefix:prefix.value}).catch(error);
+      });
+      label.append(prefix);name.prepend(label);
+    }
     const link=element('a','file-url',item.url);link.href=item.url;link.target='_blank';link.rel='noreferrer';link.title=item.url;name.append(link);
     if(item.parent)name.append(element('small','file-url',`Từ thư mục: ${item.parent}`));
     const format=element('td','file-type',types[item.type]||'File');
@@ -44,6 +60,10 @@ function render() {
     actions.append(group);row.append(box,name,format,status,actions);fragment.append(row);
   }
   $('rows').replaceChildren(fragment);
+  if(editing) {
+    const input=[...$('rows').querySelectorAll('.file-prefix')].find(el=>el.dataset.id===editing.id);
+    if(input&&!input.disabled){input.focus({preventScroll:true});input.setSelectionRange(editing.start,editing.end);}
+  }
 }
 function bind(id,action){$(id).addEventListener('click',async()=>{try{$('app-message').textContent='';await action();}catch(e){error(e);}});}
 bind('add',async()=>{
@@ -58,10 +78,11 @@ bind('add',async()=>{
 });
 bind('select-all',async()=>{batch=await send('select',{ids:batch.items.map(i=>i.id),selected:$('select-all').checked});render();});
 bind('check',async()=>{batch=await send('queue',{ids:selected().map(i=>i.id),mode:'check'});render();});
-bind('download',async()=>{batch=await send('queue',{ids:selected().map(i=>i.id),mode:'download'});render();});
-bind('retry',async()=>{batch=await send('queue',{ids:selected().filter(i=>['error','action'].includes(i.status)).map(i=>i.id),mode:'download'});render();});
+function prefixes(){return Object.fromEntries(batch.items.map(i=>[i.id,prefixDrafts.get(i.id)??i.prefix??'']));}
+bind('download',async()=>{batch=await send('queue',{ids:selected().map(i=>i.id),mode:'download',prefixes:prefixes()});render();});
+bind('retry',async()=>{batch=await send('queue',{ids:selected().filter(i=>['error','action'].includes(i.status)).map(i=>i.id),mode:'download',prefixes:prefixes()});render();});
 bind('stop',async()=>{batch=await send('stop');render();$('app-message').textContent='Đã dừng bắt đầu file mới. File đã chuyển cho Chrome vẫn tiếp tục tải; có thể hủy trong danh sách tải của Chrome.';});
-bind('clear',async()=>{batch=await send('clear');render();});
+bind('clear',async()=>{batch=await send('clear');for(const id of prefixDrafts.keys())if(!batch.items.some(i=>i.id===id))prefixDrafts.delete(id);render();});
 function openFolder(item) {
   if(folderBusy)return;
   folder=item;folderItems=new Map();$('folder-name').textContent=item.name===item.id?'Bạn muốn tải những file nào?':item.name;
@@ -114,6 +135,11 @@ $('folder-dialog').addEventListener('cancel',event=>{if(folderBusy)event.prevent
 bind('folder-all',()=>{for(const item of folderItems.values())item.selected=$('folder-all').checked;renderFolder();saveFolder();});
 bind('import-folder',async()=>{batch=await send('add',{items:[...folderItems.values()].filter(i=>i.selected)});render();closeFolder();});
 if(globalThis.chrome?.runtime?.id) {
+  if(new URLSearchParams(location.search).get('overlay')==='1') {
+    $('hide-tool').hidden=false;
+    bind('hide-tool',()=>send('hidePanel'));
+    installIdleHide(window,document,()=>send('hidePanel'),error);
+  }
   chrome.storage.onChanged.addListener((changes,area)=>{if(area==='local'&&changes.batch){batch=changes.batch.newValue;render();}});
   refresh().catch(error);
   if(local)local.get(['linkDraft','folderDraft']).then(saved=>{

@@ -94,6 +94,13 @@ export function parseBatch(text) {
 export function safeName(name) {
   return name.replace(/[<>:"/\\|?*\u0000-\u001f]/g,'_').replace(/^\.+/,'').replace(/[. ]+$/,'').slice(0,160) || 'download';
 }
+export function prefixedName(prefix, original) {
+  const combined=(prefix.trim()?prefix.trimEnd()+' ':'')+original;
+  // Keep the file extension when limiting long names.
+  const cleaned=combined.replace(/[<>:"/\\|?*\u0000-\u001f]/g,'_').replace(/^\.+/,'').replace(/[. ]+$/,'');
+  const extension=cleaned.match(/\.[^.]{1,16}$/)?.[0]||'';
+  return cleaned.length>160?cleaned.slice(0,160-extension.length)+extension:cleaned||'download';
+}
 export function classifyResponse(status, url, mime, disposition, body = '') {
   if (new URL(url).hostname === 'accounts.google.com') return {status:'action',message:'Cần đăng nhập Google. Mở trên Google rồi kiểm tra lại.'};
   if (status === 429 || /download quota|too many users have viewed|quota exceeded/i.test(body)) return {status:'error',message:'Google giới hạn lượt tải. Hãy thử lại sau.'};

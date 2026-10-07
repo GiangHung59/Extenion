@@ -11,6 +11,12 @@ export async function request(url, credentials) {
   const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),20000);
   try {
     const response=await fetch(url,{credentials,signal:controller.signal,cache:'no-store'});
+    // Login redirects require host permission too. Detect by URL and stop without
+    // reading the account page; an anonymous probe may still succeed with cookies.
+    if(new URL(response.url).hostname==='accounts.google.com') {
+      await response.body?.cancel().catch(()=>{});
+      return {...classifyResponse(response.status,response.url,'',''),body:'',mime:'',httpStatus:response.status,finalUrl:response.url};
+    }
     const mime=response.headers.get('content-type')||'';
     const disposition=response.headers.get('content-disposition')||'';
     const body=/text\/html|application\/xhtml/i.test(mime)&&!/attachment/i.test(disposition)?await readLimited(response):'';
@@ -28,7 +34,16 @@ export async function resolveDownload(url, credentials, item) {
   for(let attempt=0;attempt<3;attempt++) {
     visited.add(url);
     const result=await request(url,credentials);
-    if(result.status==='ready')return {...result,downloadUrl:url,confirmed};
+    if(result.status==='ready') {
+      // Hand Chrome the URL that actually returned the file, not a confirmation
+      // endpoint that could redirect differently when requested a second time.
+      const final=new URL(result.finalUrl);
+      if(final.protocol!=='https:'||final.username||final.password||final.port||
+        !(['drive.google.com','docs.google.com','drive.usercontent.google.com'].includes(final.hostname)||final.hostname.endsWith('.googleusercontent.com'))) {
+        return {status:'action',message:'Google chuyển tải đến địa chỉ chưa được hỗ trợ. Mở trên Google để kiểm tra.'};
+      }
+      return {...result,downloadUrl:final.href,confirmed};
+    }
     const next=result.httpStatus===200?confirmationURL(result.body,result.finalUrl,item):null;
     if(!next)return result;
     if(visited.has(next)||attempt===2)return {...result,status:'action',message:'Google lặp lại trang xác nhận tải. Hãy thử lại sau hoặc mở Google để kiểm tra.'};
