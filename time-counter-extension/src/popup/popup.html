@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Counter</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="bg-blobs" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="container">
+
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <span class="logo">⏰</span>
+                <h1 class="title">Time Counter</h1>
+            </div>
+            <input type="search" id="searchInput" class="search-input" placeholder="🔍 Tìm sự kiện…" aria-label="Tìm sự kiện">
+            <div class="header-right">
+                <span id="syncBadge" class="sync-badge sync-pending">☁️ Đang tải…</span>
+                <button id="themeToggle" class="icon-btn" title="Chuyển chế độ sáng/tối">
+                    <span class="theme-icon">🌓</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="dashboard">
+        <aside class="events-panel" aria-label="Các sự kiện">
+        <!-- Filters -->
+        <div class="chips" role="group" aria-label="Lọc sự kiện">
+            <button class="chip on" data-filter="all">Tất cả</button>
+            <button class="chip" data-filter="countdown">🎯 Đếm ngược</button>
+            <button class="chip" data-filter="countup">📅 Đếm từ ngày</button>
+        </div>
+
+        <!-- Main content -->
+        <main class="main">
+            <button id="addEventBtn" class="add-btn">
+                ＋ Thêm sự kiện
+            </button>
+            <div class="events-scroll" tabindex="0" aria-label="Danh sách sự kiện có thể cuộn">
+            <div id="eventsList" class="events-list" style="display:none;"></div>
+
+            <div id="emptyState" class="empty-state">
+                <div class="empty-icon">📅</div>
+                <h3>Chưa có sự kiện nào</h3>
+                <p>Nhấn nút bên dưới để thêm sự kiện đầu tiên</p>
+            </div>
+
+            <section id="hiddenSection" class="hidden-section" style="display:none;">
+                <h3 id="hiddenTitle" class="hidden-title"></h3>
+                <div id="hiddenList" class="hidden-list"></div>
+            </section>
+            </div>
+        </main>
+        </aside>
+        <!-- Pinned hero + calendar -->
+        <section class="top-grid">
+            <div id="hero" class="hero">
+                <div id="heroEmpty" class="hero-empty" style="display:none;">
+                    <h2>Chưa có sự kiện nào</h2>
+                    <p>Nhấn nút “Thêm sự kiện” bên dưới để tạo sự kiện đầu tiên.</p>
+                </div>
+                <div id="heroBody">
+                    <small class="hero-kicker">📌 ĐANG GHIM</small>
+                    <h2 id="heroName" class="hero-name"></h2>
+                    <div id="heroBig" class="hero-big"></div>
+                    <div class="hero-live"><span id="heroLive"></span><small>Đang chạy trực tiếp, cập nhật mỗi giây</small></div>
+                    <div class="progress"><i id="heroBar"></i></div>
+                    <div class="proglabels"><span id="heroProgLeft"></span><span id="heroProgRight"></span></div>
+                    <div id="heroMeta" class="hero-meta"></div>
+                    <div class="herobtns">
+                        <button id="heroEditBtn" class="hero-btn hero-btn-white">✏️ Sửa sự kiện này</button>
+                        <button id="heroUnpinBtn" class="hero-btn hero-btn-ghost">Bỏ ghim</button>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="calendar" aria-label="Lịch Dương và Âm">
+                <div class="cal-head">
+                    <button id="calPrevBtn" class="cal-nav" title="Tháng trước">‹</button>
+                    <h3 id="calTitle" class="cal-title"></h3>
+                    <button id="calNextBtn" class="cal-nav" title="Tháng sau">›</button>
+                </div>
+                <div class="cal-jump">
+                    <input type="text" id="calDateInput" placeholder="dd/mm/yyyy" inputmode="numeric" autocomplete="off" aria-label="Chọn ngày để đi tới">
+                    <button id="calGoBtn" class="btn-small">Đi tới</button>
+                    <button id="calTodayBtn" class="btn-small btn-small-ghost">Hôm nay</button>
+                </div>
+                <table class="cal-table">
+                    <thead><tr><th>T2</th><th>T3</th><th>T4</th><th>T5</th><th>T6</th><th>T7</th><th>CN</th></tr></thead>
+                    <tbody id="calGrid"></tbody>
+                </table>
+                <div id="calSelected" class="cal-selected"></div>
+            </aside>
+        </section>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button id="backBtn" class="back-btn">←</button>
+                <h2 id="modalTitle">Tạo sự kiện mới</h2>
+            </div>
+
+            <form id="eventForm" class="event-form">
+                <div class="form-group">
+                    <label for="eventName">Tên sự kiện</label>
+                    <input type="text" id="eventName" name="eventName"
+                           placeholder="Ví dụ: Ngày cưới, Bắt đầu công việc…" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Loại đếm</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="eventType" value="countdown" checked>
+                            <span class="radio-custom"></span>
+                            🎯 Đếm ngược đến ngày (tương lai)
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="eventType" value="countup">
+                            <span class="radio-custom"></span>
+                            📅 Đếm từ ngày đó đến nay (quá khứ)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group form-two">
+                    <div>
+                        <label for="eventDate">Ngày</label>
+                        <input type="text" id="eventDate" name="eventDate" placeholder="dd/mm/yyyy" inputmode="numeric" autocomplete="off" required>
+                    </div>
+                    <div>
+                        <label for="eventTime">Giờ (tùy chọn)</label>
+                        <input type="time" id="eventTime" name="eventTime">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Bỏ qua các ngày trong tuần</label>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="excludedDays" value="1">
+                            <span class="checkbox-custom"></span>Thứ 2
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="excludedDays" value="2">
+                            <span class="checkbox-custom"></span>Thứ 3
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="excludedDays" value="3">
+                            <span class="checkbox-custom"></span>Thứ 4
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="excludedDays" value="4">
+                            <span class="checkbox-custom"></span>Thứ 5
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="excludedDays" value="5">
+                            <span class="checkbox-custom"></span>Thứ 6
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="excludedDays" value="6">
+                            <span class="checkbox-custom"></span>Thứ 7
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="excludedDays" value="0">
+                            <span class="checkbox-custom"></span>Chủ nhật
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="cancelBtn" class="btn btn-secondary">Hủy</button>
+                    <button type="submit" class="btn btn-primary">💾 Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../shared/counting.js"></script>
+    <script src="../shared/lunar.js"></script>
+    <script src="popup.js"></script>
+</body>
+</html>
