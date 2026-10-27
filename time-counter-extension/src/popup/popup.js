@@ -33,6 +33,7 @@ function dateInputValue(date) {
 
 const ACTION_ICON_PATHS = {
   pin: '<path d="m16 3 5 5-4 2-3 6-2-2-7 7-2-2 7-7-2-2 6-3z"/>',
+  unpin: '<path d="m3 3 18 18M16 3l5 5-4 2-2 4M12 12l-7 9-2-2 7-7M7 7l-1 1 6 6"/>',
   edit: '<path d="m15 5 4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15z"/>',
   delete: '<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/>',
   hide: '<path d="m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.8 5.2A11 11 0 0 1 12 5c6 0 10 7 10 7a18 18 0 0 1-3.2 3.8M6.2 6.2A21 21 0 0 0 2 12s4 7 10 7a11 11 0 0 0 5.8-1.8"/>'
@@ -286,6 +287,7 @@ class TimeCounter {
     if (!big || !live) return;
 
     if (event.type === 'countdown') {
+      delete progLeft._dateContent;
       const target = parseDateTime(event.date, event.time);
       const start = event.createdAt ? new Date(event.createdAt) : todayMid;
       start.setHours(0, 0, 0, 0);
@@ -310,7 +312,7 @@ class TimeCounter {
         progLeft.textContent = 'Đã qua ' + formatCalendarBreakdown(calendarBreakdown(start, todayMid));
         progRight.textContent = pct + '%';
       }
-      meta.textContent = `Đến ngày: ${this.formatDate(event.date)}${event.time ? ' lúc ' + event.time : ''} • Tính từ: ${this.formatDate(localDateKey(start))}`;
+      this.setStableDateContent(meta, `Đến ngày: ${this.calendarDateLink(event.date)}${event.time ? ' lúc ' + this.escapeHtml(event.time) : ''} • Tính từ: ${this.calendarDateLink(localDateKey(start))}`);
     } else {
       const start = parseDateTime(event.date, event.time);
       const liveVal = liveCountup(start, now);
@@ -318,9 +320,9 @@ class TimeCounter {
       live.textContent = counter.isToday ? 'Hôm nay' : formatLive(liveVal, 'Đã qua');
       const prog = countupProgress(start, now);
       bar.style.width = prog.pct + '%';
-      progLeft.textContent = 'Tiến tới kỷ niệm tiếp theo: ' + this.formatDate(localDateKey(prog.next));
+      this.setStableDateContent(progLeft, 'Tiến tới kỷ niệm tiếp theo: ' + this.calendarDateLink(localDateKey(prog.next)));
       progRight.textContent = prog.pct + '%';
-      meta.textContent = `Từ ngày: ${this.formatDate(event.date)}${event.time ? ' lúc ' + event.time : ''} • Kỷ niệm tiếp theo: ${this.formatDate(localDateKey(prog.next))}`;
+      this.setStableDateContent(meta, `Từ ngày: ${this.calendarDateLink(event.date)}${event.time ? ' lúc ' + this.escapeHtml(event.time) : ''} • Kỷ niệm tiếp theo: ${this.calendarDateLink(localDateKey(prog.next))}`);
     }
   }
 
@@ -395,7 +397,7 @@ class TimeCounter {
           </div>
 
           <div class="card-meta">
-            <span class="meta-date">${dateLabel}: ${this.formatDate(event.date)}${event.time ? ' lúc ' + event.time : ''}</span>
+            <span class="meta-date">${dateLabel}: ${this.calendarDateLink(event.date)}${event.time ? ' lúc ' + this.escapeHtml(event.time) : ''}</span>
             ${excText ? `<span class="meta-excl">${excText}</span>` : ''}
             ${counter.hasExcluded && counter.calendarDays !== counter.days ? `<span class="meta-calendar">Lịch: ${counter.calendarDays} ngày</span>` : ''}
           </div>
@@ -418,7 +420,7 @@ class TimeCounter {
     list.innerHTML = hidden.map(event => `
       <div class="hidden-item">
         <span class="hidden-name">${this.escapeHtml(event.name)}</span>
-        <span class="hidden-date">${this.formatDate(event.date)}</span>
+        <span class="hidden-date">${this.calendarDateLink(event.date)}</span>
         <button class="btn-small" data-unhide-id="${event.id}">Hiện lại</button>
       </div>
     `).join('');
@@ -457,7 +459,7 @@ class TimeCounter {
         const lunar = cell.lunar;
         const lunarText = lunar ? (lunar.isLeap ? lunar.day + 'n' : lunar.day) : '';
         const dayEvents = eventByDate[key] || [];
-        html += `<td class="${cls}" data-cal-date="${key}" title="${this.escapeHtml(dayEvents.map(e => e.name).join(', '))}">
+        html += `<td class="${cls}" data-cal-date="${key}" tabindex="-1" aria-label="${this.formatDate(key)}" title="${this.escapeHtml(dayEvents.map(e => e.name).join(', '))}">
           <span class="cal-solar">${cell.solarDay}</span>
           <span class="cal-lunar">${lunarText}</span>
           ${dayEvents.length ? '<span class="cal-dot" title="' + dayEvents.length + ' sự kiện"></span>' : ''}
@@ -484,6 +486,36 @@ class TimeCounter {
     const input = document.getElementById('calDateInput');
     input.value = dateInputValue(this.selectedDate);
     input.setCustomValidity('');
+  }
+
+  calendarDateLink(dateStr) {
+    const date = parseCalendarDate(dateStr);
+    if (!date) return '';
+    const label = this.formatDate(dateStr);
+    return `<span class="date-milestone">${label}<button type="button" class="date-jump-btn" data-calendar-jump="${localDateKey(date)}" title="Xem ngày ${label} trên lịch" aria-label="Xem ngày ${label} trên lịch"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg></button></span>`;
+  }
+
+  setStableDateContent(element, html) {
+    if (element.innerHTML !== html && element._dateContent !== html) element.innerHTML = html;
+    element._dateContent = html;
+  }
+
+  jumpToCalendar(dateStr) {
+    const date = parseCalendarDate(dateStr);
+    if (!date) return;
+    this.selectedDate = date;
+    this.calYear = date.getFullYear();
+    this.calMonth = date.getMonth();
+    this.resetCalendarInput();
+    this.renderCalendar();
+    const cell = document.querySelector(`[data-cal-date="${localDateKey(date)}"]`);
+    if (!cell) return;
+    cell.focus({ preventScroll: true });
+    const rect = cell.getBoundingClientRect();
+    if (window.matchMedia('(max-width: 1099px)').matches &&
+        (rect.top < 0 || rect.bottom > window.innerHeight || rect.left < 0 || rect.right > window.innerWidth)) {
+      cell.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
   }
 
   formatDate(dateStr) {
@@ -527,7 +559,7 @@ class TimeCounter {
   showModal(title = 'Tạo sự kiện mới') {
     document.getElementById('modalTitle').textContent = title;
     document.getElementById('eventModal').classList.add('show');
-    setTimeout(() => document.getElementById('eventName').focus(), 100);
+    document.getElementById('eventName').focus();
   }
 
   hideModal() {
@@ -576,7 +608,16 @@ class TimeCounter {
       });
     });
 
-    document.getElementById('heroEditBtn').innerHTML = actionIcon('edit') + ' Chỉnh sửa';
+    document.getElementById('heroEditBtn').innerHTML = actionIcon('edit');
+    document.getElementById('heroUnpinBtn').innerHTML = actionIcon('unpin');
+    // Capture date jumps before event-card pinning can receive the click.
+    document.addEventListener('click', e => {
+      const button = e.target.closest('[data-calendar-jump]');
+      if (!button) return;
+      e.preventDefault();
+      e.stopPropagation();
+      this.jumpToCalendar(button.dataset.calendarJump);
+    }, true);
     document.getElementById('heroEditBtn').addEventListener('click', e => {
       const event = this.getPinnedEvent();
       if (event) this.editEvent(event.id);

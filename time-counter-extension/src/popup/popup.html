@@ -63,7 +63,6 @@
                     <p>Nhấn nút “Thêm sự kiện” bên dưới để tạo sự kiện đầu tiên.</p>
                 </div>
                 <div id="heroBody">
-                    <small class="hero-kicker">📌 ĐANG GHIM</small>
                     <h2 id="heroName" class="hero-name"></h2>
                     <div id="heroBig" class="hero-big"></div>
                     <div class="hero-live"><span id="heroLive"></span><small>Đang chạy trực tiếp, cập nhật mỗi giây</small></div>
@@ -71,8 +70,8 @@
                     <div class="proglabels"><span id="heroProgLeft"></span><span id="heroProgRight"></span></div>
                     <div id="heroMeta" class="hero-meta"></div>
                     <div class="herobtns">
-                        <button id="heroEditBtn" class="hero-btn hero-btn-white">✏️ Sửa sự kiện này</button>
-                        <button id="heroUnpinBtn" class="hero-btn hero-btn-ghost">Bỏ ghim</button>
+                        <button type="button" id="heroEditBtn" class="hero-btn hero-btn-white" title="Chỉnh sửa sự kiện" aria-label="Chỉnh sửa sự kiện"></button>
+                        <button type="button" id="heroUnpinBtn" class="hero-btn hero-btn-ghost" title="Bỏ ghim sự kiện" aria-label="Bỏ ghim sự kiện"></button>
                     </div>
                 </div>
             </div>
@@ -184,6 +183,7 @@
 
     <script src="../shared/counting.js"></script>
     <script src="../shared/lunar.js"></script>
+    <script src="date-input.js"></script>
     <script src="popup.js"></script>
 </body>
 </html>

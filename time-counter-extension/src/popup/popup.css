@@ -537,7 +537,8 @@ body {
   min-width: 0; overflow-wrap: anywhere; min-height: 440px;
   display: flex; align-items: center;
 }
-.hero-kicker { letter-spacing: 1.4px; font-size: 11px; opacity: .9; font-weight: 800; }
+#heroBody { width: 100%; }
+.hero-name, .hero-big, .hero-live { text-align: center; }
 .hero-name { font-size: clamp(22px, 2.2vw, 32px); margin: 12px 0 16px; line-height: 1.25; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
 .hero-big { font-size: clamp(36px, 3.5vw, 58px); font-weight: 800; letter-spacing: -1px; line-height: 1.05; }
 .hero-live {
@@ -550,8 +551,8 @@ body {
 .hero .progress i { display: block; height: 100%; background: #fff; border-radius: 99px; transition: width .5s; }
 .hero .proglabels { display: flex; justify-content: space-between; font-size: 12px; opacity: .95; margin-top: 7px; }
 .hero-meta { font-size: 13px; opacity: .92; margin-top: 10px; }
-.herobtns { margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
-.hero-btn { border: none; border-radius: 9px; padding: 10px 14px; font-weight: 700; cursor: pointer; font-size: 14px; }
+.herobtns { margin-top: 16px; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.hero-btn { border: none; border-radius: 9px; width: 30px; height: 30px; padding: 7px; justify-content: center; font-weight: 700; cursor: pointer; font-size: 14px; }
 .hero-btn-white { background: #fff; color: #4f46e5; }
 .hero-btn-ghost { background: rgba(255,255,255,.18); color: #fff; }
 .hero-empty h2 { font-size: 22px; margin-bottom: 8px; }
@@ -698,3 +699,11 @@ button:focus-visible, .event-card:focus-visible { outline: 3px solid var(--accen
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* Date milestones link directly to the selected solar calendar day. */
+.date-milestone { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
+.date-jump-btn { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; padding: 2px; border: 1px solid currentColor; border-radius: 6px; background: transparent; color: inherit; cursor: pointer; vertical-align: middle; flex: 0 0 auto; }
+.date-jump-btn:hover { background: var(--bg-hover, rgba(127,127,127,.15)); }
+.hero .date-jump-btn:hover { background: rgba(255,255,255,.18); }
+.hero .date-jump-btn:focus-visible, .hero-btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.cal-table td:focus-visible { outline: 2px solid var(--accent-down); outline-offset: -2px; }
