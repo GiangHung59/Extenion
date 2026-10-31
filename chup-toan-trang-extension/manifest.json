@@ -1,0 +1,61 @@
+{
+  "action": {
+    "default_icon": {
+      "128": "icons/icon128.png",
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png"
+    },
+    "default_popup": "popup.html",
+    "default_title": "Chụp toàn trang"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "commands": {
+    "capture-full-page": {
+      "description": "Chụp toàn bộ trang",
+      "suggested_key": {
+        "default": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y"
+      }
+    },
+    "capture-visible": {
+      "description": "Chụp phần đang hiển thị",
+      "suggested_key": {
+        "default": "Ctrl+Shift+X",
+        "mac": "Command+Shift+X"
+      }
+    },
+    "capture-region": {
+      "description": "Chụp vùng chọn",
+      "suggested_key": {
+        "default": "Ctrl+Shift+E",
+        "mac": "Command+Shift+E"
+      }
+    }
+  },
+  "description": "Chụp trang web: toàn bộ trang (cuộn từng đoạn rồi ghép, không lặp hình), phần đang hiển thị, hoặc chọn vùng. Sau khi chụp: hiện panel góc phải dưới để Lưu/Xoá, hoặc lưu luôn, hoặc chép vào clipboard; có trình sửa ảnh (vẽ, mũi tên, làm mờ) và phím tắt tuỳ chỉnh.",
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "icons": {
+    "128": "icons/icon128.png",
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png"
+  },
+  "manifest_version": 3,
+  "name": "Chụp Toàn Trang — Screenshot Pro",
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "scripting",
+    "storage",
+    "downloads",
+    "offscreen",
+    "contextMenus",
+    "clipboardWrite"
+  ],
+  "version": "3.5.1"
+}

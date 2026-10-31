@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Sửa ảnh — Chụp Toàn Trang</title>
+  <link rel="stylesheet" href="edit.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="title-box">
+      <span class="app-name">Sửa ảnh</span>
+      <span class="fname" id="fname">…</span>
+      <span class="dims" id="dims"></span>
+    </div>
+    <p class="err" id="err" hidden></p>
+  </header>
+
+  <div class="toolbar" id="toolbar">
+    <button class="tool" data-tool="select" title="Chọn / di chuyển">
+      <svg viewBox="0 0 24 24"><path d="M6 3l13 9-7 1.5L9 20z" fill="currentColor"/></svg>
+    </button>
+    <button class="tool" data-tool="pen" title="Bút vẽ">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14.5 6.5l3 3"/></svg>
+    </button>
+    <button class="tool" data-tool="marker" title="Đánh dấu (tô nhấn)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 19l1.5-4.5L15 6l3 3-8.5 8.5z"/><path d="M3 21h18"/></svg>
+    </button>
+    <button class="tool" data-tool="line" title="Đường thẳng">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 19L19 5"/></svg>
+    </button>
+    <button class="tool" data-tool="arrow" title="Mũi tên">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20L20 4"/><path d="M11 4h9v9"/></svg>
+    </button>
+    <button class="tool" data-tool="rect" title="Khung chữ nhật">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="6" width="16" height="12" rx="1"/></svg>
+    </button>
+    <button class="tool" data-tool="ellipse" title="Khung tròn / oval">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="12" rx="9" ry="7"/></svg>
+    </button>
+    <button class="tool" data-tool="text" title="Gõ chữ">
+      <svg viewBox="0 0 24 24"><text x="12" y="18" text-anchor="middle" font-size="17" font-weight="700" fill="currentColor" font-family="inherit">A</text></svg>
+    </button>
+    <button class="tool" data-tool="blur" title="Làm mờ (che thông tin nhạy cảm)">
+      <svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="5" height="5"/><rect x="14" y="4" width="5" height="5"/><rect x="9" y="9" width="5" height="5"/><rect x="19" y="9" width="5" height="5" transform="translate(-5 0)"/><rect x="4" y="14" width="5" height="5"/><rect x="14" y="14" width="5" height="5"/></svg>
+    </button>
+    <button class="tool" data-tool="crop" title="Cắt ảnh">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 2v14a2 2 0 0 0 2 2h13"/><path d="M2 7h14a2 2 0 0 1 2 2v13"/></svg>
+    </button>
+
+    <span class="sep"></span>
+    <div class="palette" id="palette">
+      <button class="swatch active" data-color="#dc2626" style="--c:#dc2626" title="Đỏ"></button>
+      <button class="swatch" data-color="#f59e0b" style="--c:#f59e0b" title="Vàng cam"></button>
+      <button class="swatch" data-color="#16a34a" style="--c:#16a34a" title="Xanh lá"></button>
+      <button class="swatch" data-color="#2563eb" style="--c:#2563eb" title="Xanh dương"></button>
+      <button class="swatch" data-color="#0f172a" style="--c:#0f172a" title="Đen"></button>
+      <button class="swatch" data-color="#ffffff" style="--c:#ffffff" title="Trắng"></button>
+    </div>
+
+    <span class="sep"></span>
+    <div class="sizes" id="sizes">
+      <button class="size" data-size="0" title="Nét nhỏ"><span class="dot dot-s"></span></button>
+      <button class="size active" data-size="1" title="Nét vừa"><span class="dot dot-m"></span></button>
+      <button class="size" data-size="2" title="Nét to"><span class="dot dot-l"></span></button>
+    </div>
+
+    <span class="sep"></span>
+    <button class="tool" id="btn-undo" title="Hoàn tác (Ctrl+Z)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>
+    </button>
+    <button class="tool" id="btn-redo" title="Làm lại (Ctrl+Shift+Z)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg>
+    </button>
+    <span class="toolbar-note" id="toolbar-note"></span>
+  </div>
+
+  <div class="stage-wrap" id="stage-wrap">
+    <div class="canvas-box" id="canvas-box">
+      <canvas id="stage"></canvas>
+      <textarea id="text-editor" hidden rows="1" spellcheck="false" placeholder="Gõ chữ rồi Enter"></textarea>
+      <div class="crop-bar" id="crop-bar" hidden>
+        <span>Đã khoanh vùng cắt —</span>
+        <button id="btn-crop-ok" class="crop-ok">Cắt vùng này</button>
+        <button id="btn-crop-cancel" class="crop-cancel">Huỷ</button>
+      </div>
+    </div>
+
+    <aside class="rail">
+      <button class="rail-btn rail-apply" id="btn-apply" title="Áp dụng — ghi bản đã sửa, quay về trang web">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+      <span class="rail-label">Áp dụng</span>
+      <button class="rail-btn" id="btn-copy" title="Sao chép ảnh đã sửa vào clipboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </button>
+      <span class="rail-label">Sao chép</span>
+      <button class="rail-btn" id="btn-download" title="Tải ảnh đã sửa xuống máy">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M6 10l6 6 6-6"/><path d="M4 21h16"/></svg>
+      </button>
+      <span class="rail-label">Tải xuống</span>
+      <button class="rail-btn" id="btn-original" title="Bỏ mọi sửa, quay về ảnh gốc">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+      </button>
+      <span class="rail-label">Bản gốc</span>
+      <button class="rail-btn rail-close" id="btn-close" title="Đóng trình sửa (không áp dụng)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </button>
+      <span class="rail-label">Đóng</span>
+    </aside>
+  </div>
+
+  <p class="foot-note">Ảnh gốc luôn được giữ riêng: sửa sai cứ bấm “Bản gốc” để làm lại. “Áp dụng” mới ghi bản đã sửa vào ảnh đang chờ ở panel.</p>
+  <div class="toast" id="toast" hidden></div>
+  <script src="edit.js"></script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <div class="logo-box">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    </div>
+    <div class="header-text">
+      <h1>Chụp Toàn Trang</h1>
+      <p>Bản Pro • Đang dùng <span id="os-label">máy tính</span></p>
+    </div>
+    <button id="btn-close" class="close-btn" title="Đóng">×</button>
+  </header>
+
+  <div class="tab-pill">
+    <span class="dot" id="tab-dot"></span>
+    <span class="tab-url" id="tab-url">Đang đọc tab…</span>
+    <span class="tab-status" id="tab-status">Sẵn sàng</span>
+  </div>
+
+  <div id="main-view">
+    <div class="section-label">CHỤP NHANH</div>
+    <section class="modes">
+      <button id="btn-full" class="mode primary">
+        <svg class="mode-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 12 12 17 22 12"/><polyline points="2 17 12 22 22 17"/></svg>
+        <span class="mode-text">
+          <strong>Toàn bộ trang</strong>
+          <small>Cuộn thật từng đoạn rồi ghép ảnh<br>Hết lặp hình, hợp trang cuộn trong khung</small>
+        </span>
+        <span class="chip chip-light" id="chip-full">Ctrl+Shift+Y</span>
+      </button>
+      <button id="btn-visible" class="mode">
+        <span class="icon-box">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </span>
+        <span class="mode-text">
+          <strong>Phần đang hiển thị</strong>
+          <small>Chụp đúng khung đang xem</small>
+        </span>
+        <span class="chip" id="chip-visible">Ctrl+Shift+X</span>
+      </button>
+      <button id="btn-region" class="mode">
+        <span class="icon-box">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
+        </span>
+        <span class="mode-text">
+          <strong>Chọn vùng chụp</strong>
+          <small>Kéo chuột khoanh vùng tuỳ ý</small>
+        </span>
+        <span class="chip" id="chip-region">Kéo chuột</span>
+      </button>
+    </section>
+
+    <div class="shortcuts-row">
+      <button type="button" id="btn-shortcuts" class="mini-btn">Đổi phím tắt</button>
+      <span class="mini-hint">Phím trên các nút là phím thật đang dùng — bấm đây để tự đặt lại</span>
+    </div>
+
+    <section class="settings">
+      <div class="section-label">TUỲ CHỌN</div>
+
+      <div class="row">
+        <span class="row-label">Định dạng</span>
+        <div class="segmented" id="seg-format">
+          <button data-value="png" class="active">PNG</button>
+          <button data-value="jpeg">JPG</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="row-label">Hẹn giờ</span>
+        <div class="segmented" id="seg-delay">
+          <button data-value="0" class="active">Ngay</button>
+          <button data-value="3">3s</button>
+          <button data-value="5">5s</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="row-label">Sau khi chụp</span>
+        <div class="segmented" id="seg-after">
+          <button data-value="ask" class="active">Hỏi</button>
+          <button data-value="always">Lưu luôn</button>
+          <button data-value="clipboard">Clipboard</button>
+        </div>
+      </div>
+
+      <div class="row toggle-row">
+        <span class="toggle-text">
+          <strong>Chụp thông minh chống lặp</strong>
+          <small>Tự nhận diện khung cuộn thật của trang</small>
+        </span>
+        <label class="switch"><input type="checkbox" id="opt-smart" checked><span class="track"></span></label>
+      </div>
+
+      <div class="row toggle-row">
+        <span class="toggle-text">
+          <strong>Cuộn tải ảnh trước khi chụp</strong>
+          <small>Ảnh tải lười không bị trắng</small>
+        </span>
+        <label class="switch"><input type="checkbox" id="opt-prescroll" checked><span class="track"></span></label>
+      </div>
+
+      <div class="row toggle-row">
+        <span class="toggle-text">
+          <strong>Vẽ chú thích trước khi chụp</strong>
+          <small>Chỉ áp dụng khi chụp "Phần đang hiển thị": hiện công cụ vẽ ngay trên trang, vẽ xong mới chụp. Chụp toàn trang / vùng chọn không bị ảnh hưởng.</small>
+        </span>
+        <label class="switch"><input type="checkbox" id="opt-annotate"><span class="track"></span></label>
+      </div>
+
+      <div class="row">
+        <span class="row-label">Đầu tên file</span>
+        <input type="text" id="opt-prefix" value="screenshot" maxlength="40">
+      </div>
+
+      <div class="row name-parts-row">
+        <span class="row-label">Tên file gồm</span>
+        <div class="name-parts">
+          <label><input type="checkbox" id="np-prefix" checked> Tên đặt</label>
+          <label><input type="checkbox" id="np-title"> Tên trang</label>
+          <label><input type="checkbox" id="np-mode"> Kiểu chụp</label>
+          <label><input type="checkbox" id="np-datetime" checked> Ngày giờ</label>
+        </div>
+      </div>
+      <p class="note-small">Tên hiển thị thế nào, tải về đúng thế ấy.</p>
+    </section>
+  </div>
+
+  <div id="progress-view" hidden>
+    <div class="progress-card">
+      <div class="progress-head">
+        <span class="spinner"></span>
+        <strong id="prog-title">Đang chụp toàn trang…</strong>
+        <span class="chip chip-blue" id="prog-seg"></span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+      <p class="progress-meta" id="prog-meta">Đang chuẩn bị…</p>
+      <div class="progress-foot">
+        <button id="btn-cancel" class="cancel-btn">Huỷ chụp</button>
+        <span class="progress-note"><span class="amber-dot"></span>Trong lúc chụp đừng chuyển tab — extension tự cuộn trang.</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="status" class="status" hidden></div>
+
+  <footer>Chụp xong hiện ảnh nhỏ ở góc phải dưới màn hình</footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

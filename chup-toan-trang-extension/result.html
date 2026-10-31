@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Chụp xong — Chụp Toàn Trang</title>
+  <link rel="stylesheet" href="result.css">
+</head>
+<body>
+  <main class="card">
+    <div class="head">
+      <span class="check-circle">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </span>
+      <h1>Chụp xong!</h1>
+      <span class="mode-chip" id="mode-chip">Toàn bộ trang</span>
+    </div>
+
+    <p class="error" id="error" hidden></p>
+
+    <div id="content" hidden>
+      <label class="filename-label" for="filename">Tên file khi tải về (sửa được)</label>
+      <input type="text" id="filename" spellcheck="false">
+
+      <div class="meta" id="meta"></div>
+
+      <div class="preview-wrap">
+        <img id="preview" alt="Ảnh chụp xem trước">
+      </div>
+
+      <div class="buttons">
+        <button id="btn-download" class="primary">Tải xuống</button>
+        <button id="btn-open" class="outline">Mở ảnh</button>
+        <button id="btn-copy" class="outline">Sao chép ảnh</button>
+        <button id="btn-back" class="ghost">Quay lại trang</button>
+        <button id="btn-close" class="ghost">Đóng tab này</button>
+      </div>
+      <p class="saved-note" id="saved-note" hidden></p>
+      <p class="hint">Ảnh xem trước ở trên lấy từ chính ảnh sẽ tải về — kiểm tra kỹ, đúng rồi mới bấm Tải xuống.</p>
+    </div>
+  </main>
+  <div class="toast" id="toast" hidden></div>
+  <script src="result.js"></script>
+</body>
+</html>
